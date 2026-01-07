@@ -58,7 +58,7 @@ if not df.empty:
     df = df.sort_values("Fecha", ascending=False)
 
 # ---------------- TÍTULO ----------------
-st.title(f"📅 Control personal de productividad — {usuario.capitalize()}")
+st.title(f"📅 Control personal de tiempos muertos — {usuario.capitalize()}")
 
 # ---------------- REGISTRO ----------------
 st.subheader("➕ Registrar actividad")
@@ -173,4 +173,5 @@ if not df_filtrado.empty:
         f"Días trabajados: {dias_trabajados} | "
         f"Horas teóricas: {horas_teoricas:.2f} h"
     )
+
 
