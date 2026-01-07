@@ -1,0 +1,10 @@
+Fecha,Inicio,Fin,Duración,Categoría,Descripción,Mes
+2026-01-05 00:00:00,08:00,12:00,4.0,Oficina,App tiempos muertos,2026-01
+2026-01-05 00:00:00,12:00,13:00,1.0,Oficina,Almuerzo,
+2026-01-05 00:00:00,13:00,14:15,1.25,Oficina,App tiempos muertos,
+2026-01-05 00:00:00,14:15,14:30,0.25,Oficina,Salida,
+2026-01-06 00:00:00,08:00,12:00,4.0,Oficina,Mejora app de tiempos muertos,
+2026-01-06 00:00:00,12:00,13:00,1.0,Oficina,Almuerzo,
+2026-01-06 00:00:00,13:00,14:15,1.25,Oficina,Mejora app de tiempos muertos,
+2026-01-06 00:00:00,14:15,14:30,0.25,Oficina,Salida,
+2026-01-07,08:00,11:00,3.0,Oficina,Mapa de emergencias,
