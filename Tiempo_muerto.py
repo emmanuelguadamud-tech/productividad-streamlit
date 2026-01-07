@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime, time
 import os
 
-# ---------------- CONFIGURACIÓN ----------------
+# ================= CONFIGURACIÓN =================
 JORNADA_INICIO = time(8, 0)
 JORNADA_FIN = time(14, 30)
 
@@ -14,17 +14,33 @@ HORAS_JORNADA = (
 
 st.set_page_config(page_title="Productividad", layout="wide")
 
-# ---------------- USUARIO ----------------
-st.sidebar.title("👤 Usuario")
-usuario = st.sidebar.text_input("Nombre de usuario")
+# ================= USUARIOS Y CLAVES =================
+USUARIOS = {
+    "Emmanuel": "1234",
+    "Emilio": "abcd",
+    "Brandon": "pass123"
+}
 
-if not usuario:
-    st.warning("Ingresa tu nombre para comenzar")
+# ================= LOGIN =================
+st.sidebar.title("🔐 Inicio de sesión")
+
+usuario = st.sidebar.text_input("Usuario")
+clave = st.sidebar.text_input("Clave", type="password")
+
+if not usuario or not clave:
+    st.warning("Ingresa usuario y clave")
     st.stop()
 
-ARCHIVO = f"actividades_{usuario.lower()}.csv"
+usuario = usuario.lower()
 
-# ---------------- CARGAR DATOS ----------------
+if usuario not in USUARIOS or USUARIOS[usuario] != clave:
+    st.error("Usuario o clave incorrectos")
+    st.stop()
+
+# ================= ARCHIVO POR USUARIO =================
+ARCHIVO = f"actividades_{usuario}.csv"
+
+# ================= CARGAR DATOS =================
 if os.path.exists(ARCHIVO):
     df = pd.read_csv(ARCHIVO)
 else:
@@ -32,19 +48,14 @@ else:
         columns=["Fecha", "Inicio", "Fin", "Duración", "Categoría", "Descripción"]
     )
 
-# Conversión robusta de fechas
 if not df.empty:
-    df["Fecha"] = pd.to_datetime(
-        df["Fecha"],
-        errors="coerce",
-        format="mixed"
-    )
+    df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
     df = df.dropna(subset=["Fecha"])
 
-# ---------------- TÍTULO ----------------
-st.title("📅 Control personal de productividad")
+# ================= TÍTULO =================
+st.title(f"📅 Control de productividad — {usuario.capitalize()}")
 
-# ---------------- REGISTRO ----------------
+# ================= REGISTRO =================
 st.subheader("➕ Registrar actividad")
 
 with st.form("form_actividad", clear_on_submit=True):
@@ -79,41 +90,33 @@ with st.form("form_actividad", clear_on_submit=True):
             st.success("Actividad guardada")
             st.rerun()
 
-# ---------------- FILTROS ----------------
+# ================= FILTROS =================
 st.divider()
-st.subheader("📆 Mes")
+st.subheader("📆 Filtros")
 
 if not df.empty:
-    # ---- Filtro por mes ----
     df["Mes"] = df["Fecha"].dt.to_period("M").astype(str)
-    meses = sorted(df["Mes"].unique())
 
-    meses_seleccionados = st.multiselect(
+    meses = sorted(df["Mes"].unique())
+    meses_sel = st.multiselect(
         "Selecciona uno o varios meses",
         meses,
         default=meses[-1:]
     )
 
-    df_filtrado = df[df["Mes"].isin(meses_seleccionados)]
+    df_filtrado = df[df["Mes"].isin(meses_sel)]
 
-    # ---- Filtro por día ----
-    st.subheader("📅 Día")
+    dias = sorted(df_filtrado["Fecha"].dt.date.unique())
+    dias_sel = st.multiselect("Selecciona días específicos", dias)
 
-    dias_disponibles = sorted(df_filtrado["Fecha"].dt.date.unique())
-
-    dias_seleccionados = st.multiselect(
-        "Selecciona uno o varios días",
-        dias_disponibles
-    )
-
-    if dias_seleccionados:
+    if dias_sel:
         df_filtrado = df_filtrado[
-            df_filtrado["Fecha"].dt.date.isin(dias_seleccionados)
+            df_filtrado["Fecha"].dt.date.isin(dias_sel)
         ]
 else:
     df_filtrado = df
 
-# ---------------- TABLA ----------------
+# ================= TABLA =================
 st.divider()
 st.subheader("📋 Actividades registradas")
 
@@ -122,7 +125,7 @@ if df_filtrado.empty:
 else:
     st.dataframe(df_filtrado, use_container_width=True)
 
-# ---------------- ELIMINAR UNA FILA ----------------
+# ================= ELIMINAR FILA =================
 st.subheader("🗑️ Eliminar actividad puntual")
 
 if not df_filtrado.empty:
@@ -142,9 +145,9 @@ if not df_filtrado.empty:
         st.success("Actividad eliminada")
         st.rerun()
 
-# ---------------- RESUMEN ----------------
+# ================= RESUMEN =================
 st.divider()
-st.subheader("📊 Resumen según filtros")
+st.subheader("📊 Resumen")
 
 if not df_filtrado.empty:
     oficina = df_filtrado[df_filtrado["Categoría"] == "Oficina"]["Duración"].sum()
