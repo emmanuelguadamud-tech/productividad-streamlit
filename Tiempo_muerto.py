@@ -16,9 +16,9 @@ st.set_page_config(page_title="Productividad", layout="wide")
 
 # ================= USUARIOS Y CLAVES =================
 USUARIOS = {
-    "Emmanuel": "1234",
-    "Emilio": "abcd",
-    "Brandon": "pass123"
+    "emmanuel": "1234",
+    "emilio": "abcd",
+    "brandon": "pass123"
 }
 
 # ================= LOGIN =================
@@ -167,5 +167,6 @@ if not df_filtrado.empty:
         f"Días trabajados: {dias_trabajados} | "
         f"Horas teóricas: {horas_teoricas:.2f} h"
     )
+
 
 
