@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, time
 import os
+import hashlib
 
 # ---------------- CONFIGURACIÓN ----------------
 JORNADA_INICIO = time(8, 0)
@@ -14,15 +15,32 @@ HORAS_JORNADA = (
 
 st.set_page_config(page_title="Productividad", layout="wide")
 
-# ---------------- USUARIO ----------------
-st.sidebar.title("👤 Usuario")
-usuario = st.sidebar.text_input("Nombre de usuario")
+# ---------------- USUARIOS Y CLAVES ----------------
+# Claves encriptadas (sha256)
+USUARIOS = {
+    "emmanuel": hashlib.sha256("1234".encode()).hexdigest(),
+    "emilio": hashlib.sha256("abcd".encode()).hexdigest(),
+    "brandon": hashlib.sha256("pass123".encode()).hexdigest()
+}
 
-if not usuario:
-    st.warning("Ingresa tu nombre para comenzar")
+# ---------------- LOGIN ----------------
+st.sidebar.title("🔐 Inicio de sesión")
+
+usuario = st.sidebar.text_input("Usuario").strip().lower()
+clave = st.sidebar.text_input("Clave", type="password").strip()
+
+if not usuario or not clave:
+    st.warning("Ingresa usuario y clave")
     st.stop()
 
-ARCHIVO = f"actividades_{usuario.lower()}.csv"
+clave_hash = hashlib.sha256(clave.encode()).hexdigest()
+
+if usuario not in USUARIOS or USUARIOS[usuario] != clave_hash:
+    st.error("Usuario o clave incorrectos")
+    st.stop()
+
+# ---------------- ARCHIVO POR USUARIO ----------------
+ARCHIVO = f"actividades_{usuario}.csv"
 
 # ---------------- CARGAR DATOS ----------------
 if os.path.exists(ARCHIVO):
@@ -34,16 +52,12 @@ else:
 
 # Conversión robusta de fechas
 if not df.empty:
-    df["Fecha"] = pd.to_datetime(
-        df["Fecha"],
-        errors="coerce",
-        format="mixed"
-    )
+    df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce", format="mixed")
     df = df.dropna(subset=["Fecha"])
-    df = df.sort_values("Fecha", ascending=False)  # 🔥 VER LO MÁS RECIENTE ARRIBA
+    df = df.sort_values("Fecha", ascending=False)
 
 # ---------------- TÍTULO ----------------
-st.title("📅 Control personal de productividad")
+st.title(f"📅 Control personal de productividad — {usuario.capitalize()}")
 
 # ---------------- REGISTRO ----------------
 st.subheader("➕ Registrar actividad")
@@ -86,29 +100,23 @@ st.divider()
 st.subheader("📆 Filtros")
 
 if not df.empty:
-    # ---- Filtro por mes ----
     df["Mes"] = df["Fecha"].dt.to_period("M").astype(str)
     meses = sorted(df["Mes"].unique())
 
-    meses_seleccionados = st.multiselect(
+    meses_sel = st.multiselect(
         "Selecciona uno o varios meses",
         meses,
-        default=meses  # ✅ TODOS LOS MESES POR DEFECTO
+        default=meses
     )
 
-    df_filtrado = df[df["Mes"].isin(meses_seleccionados)]
+    df_filtrado = df[df["Mes"].isin(meses_sel)]
 
-    # ---- Filtro por día ----
-    dias_disponibles = sorted(df_filtrado["Fecha"].dt.date.unique())
+    dias = sorted(df_filtrado["Fecha"].dt.date.unique())
+    dias_sel = st.multiselect("Selecciona días específicos", dias)
 
-    dias_seleccionados = st.multiselect(
-        "Selecciona uno o varios días",
-        dias_disponibles
-    )
-
-    if dias_seleccionados:
+    if dias_sel:
         df_filtrado = df_filtrado[
-            df_filtrado["Fecha"].dt.date.isin(dias_seleccionados)
+            df_filtrado["Fecha"].dt.date.isin(dias_sel)
         ]
 else:
     df_filtrado = df
@@ -122,7 +130,7 @@ if df_filtrado.empty:
 else:
     st.dataframe(df_filtrado, use_container_width=True)
 
-# ---------------- ELIMINAR UNA FILA ----------------
+# ---------------- ELIMINAR ----------------
 st.subheader("🗑️ Eliminar actividad puntual")
 
 if not df_filtrado.empty:
@@ -144,7 +152,7 @@ if not df_filtrado.empty:
 
 # ---------------- RESUMEN ----------------
 st.divider()
-st.subheader("📊 Resumen según filtros")
+st.subheader("📊 Resumen")
 
 if not df_filtrado.empty:
     oficina = df_filtrado[df_filtrado["Categoría"] == "Oficina"]["Duración"].sum()
