@@ -18,7 +18,7 @@ st.set_page_config(page_title="Productividad", layout="wide")
 # ---------------- USUARIOS Y CLAVES ----------------
 # Claves encriptadas (sha256)
 USUARIOS = {
-    "emmanuel": hashlib.sha256("1234".encode()).hexdigest(),
+    "emmanuel": hashlib.sha256("Emigguce201611".encode()).hexdigest(),
     "emilio": hashlib.sha256("abcd".encode()).hexdigest(),
     "shakira": hashlib.sha256("abcd123".encode()).hexdigest(),
     "brandon": hashlib.sha256("pass123".encode()).hexdigest()
@@ -173,5 +173,6 @@ if not df_filtrado.empty:
         f"Días trabajados: {dias_trabajados} | "
         f"Horas teóricas: {horas_teoricas:.2f} h"
     )
+
 
 
